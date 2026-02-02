@@ -25,7 +25,7 @@ The **29% higher** fractal dimension in Andaman-Sumatra reflects the greater spa
 
 ```bash
 # Navigate to project directory
-cd /home/ancientai/Documents/8sem/btp
+cd fractal_analysis
 
 # Install dependencies (using uv)
 uv pip install pandas numpy scipy matplotlib plotly streamlit folium streamlit-folium
