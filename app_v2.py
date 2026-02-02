@@ -20,7 +20,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import folium
-from streamlit_folium import folium_static
+from streamlit_folium import st_folium
 from datetime import datetime, timedelta
 import os
 import glob
@@ -30,7 +30,7 @@ from fractal_engine import box_counting
 from get_data import download_earthquakes
 from data_registry import (
     load_registry, add_dataset, get_all_datasets, 
-    generate_filename, update_dataset_analysis
+    generate_filename, update_dataset_analysis, delete_dataset
 )
 
 # Page configuration
@@ -55,16 +55,28 @@ st.markdown("""
     [data-testid="stSidebar"] {
         background-color: #1e2530;
     }
-    [data-testid="stSidebar"] p, 
-    [data-testid="stSidebar"] span, 
-    [data-testid="stSidebar"] div, 
-    [data-testid="stSidebar"] label,
-    [data-testid="stSidebar"] h2 {
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p, 
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] span, 
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3,
+    [data-testid="stSidebar"] label {
         color: white !important;
     }
-    [data-testid="stSidebar"] .block-container {
-        padding-top: 2rem;
+    
+    /* Fix Sidebar Expander Visibility */
+    [data-testid="stSidebar"] .st-emotion-cache-p4m06z, 
+    [data-testid="stSidebar"] .st-emotion-cache-jk6673,
+    [data-testid="stSidebar"] summary,
+    [data-testid="stSidebar"] details {
+        color: white !important;
+        background-color: transparent !important;
     }
+    
+    [data-testid="stSidebar"] summary:hover {
+        background-color: rgba(255,255,255,0.05) !important;
+    }
+
     [data-testid="stSidebarNav"] {
         background-color: #1e2530;
     }
@@ -151,9 +163,14 @@ st.markdown("""
     }
     
     /* Selectboxes and Labels - Theme Aware */
-    .stSelectbox label, .stRadio label, .stNumberInput label {
+    .stSelectbox label, .stRadio label, .stNumberInput label, .stTextInput label, .stDateInput label {
         color: var(--text-color) !important;
         font-weight: 600;
+    }
+    
+    /* Ensure sidebar labels are ALWAYS white */
+    [data-testid="stSidebar"] label {
+        color: white !important;
     }
     
     /* Main Headers forced visibility */
@@ -263,8 +280,8 @@ with st.sidebar:
     st.markdown("## 🌍 Navigation")
     
     page = st.radio(
-        "",
-        ["📊 Overview & Comparison", "📈 Temporal Analysis", "🔍 Fetch New Data", "⚙️ Advanced Analysis"],
+        "Navigation Menu:",
+        ["📊 Overview & Comparison", "📈 Temporal Analysis", "🔍 Fetch New Data", "⚙️ Advanced Analysis", "🗂️ Manage Datasets"],
         label_visibility="collapsed"
     )
     
@@ -374,7 +391,7 @@ if page == "📊 Overview & Comparison":
             ds2_name = st.selectbox("Dataset 2:", dataset_names, index=min(1, len(dataset_names)-1), key='ds2')
             
         # Full width button using columns to center or stretch
-        if st.button("🔍 Compare Datasets", type="primary", use_container_width=True):
+        if st.button("🔍 Compare Datasets", type="primary", width="stretch"):
             if ds1_name == ds2_name:
                 st.error("Please select two different datasets.")
             else:
@@ -444,8 +461,10 @@ if page == "📊 Overview & Comparison":
                     # Add sample points
                     sample1 = data1.sample(min(500, len(data1)))
                     for _, r in sample1.iterrows():
-                        folium.CircleMarker([r['latitude'], r['longitude']], radius=2, color='#1f77b4', fill=True).add_to(map1)
-                    folium_static(map1, width=None, height=300)
+                        # Size based on magnitude: larger quakes = bigger circles
+                        radius = max(2, (r.get('mag', 4.0) - 3) * 2)
+                        folium.CircleMarker([r['latitude'], r['longitude']], radius=radius, color='#1f77b4', fill=True, fillOpacity=0.6).add_to(map1)
+                    st_folium(map1, width=None, height=300, key="map1", returned_objects=[])
                     
                 with mcols[1]:
                     st.markdown(f"**{ds2['region']}**")
@@ -453,8 +472,10 @@ if page == "📊 Overview & Comparison":
                     map2 = folium.Map(location=center2, zoom_start=5, height=300)
                     sample2 = data2.sample(min(500, len(data2)))
                     for _, r in sample2.iterrows():
-                        folium.CircleMarker([r['latitude'], r['longitude']], radius=2, color='#ff7f0e', fill=True).add_to(map2)
-                    folium_static(map2, width=None, height=300)
+                        # Size based on magnitude: larger quakes = bigger circles
+                        radius = max(2, (r.get('mag', 4.0) - 3) * 2)
+                        folium.CircleMarker([r['latitude'], r['longitude']], radius=radius, color='#ff7f0e', fill=True, fillOpacity=0.6).add_to(map2)
+                    st_folium(map2, width=None, height=300, key="map2", returned_objects=[])
                 st.markdown('</div>', unsafe_allow_html=True)
                 
                 # Box Counting Container
@@ -481,7 +502,7 @@ if page == "📊 Overview & Comparison":
                 fig.update_xaxes(title_text="log(Box Size)")
                 fig.update_yaxes(title_text="log(Count)")
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
                 st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -517,7 +538,7 @@ elif page == "📈 Temporal Analysis":
         
         if len(selected_datasets) == 0:
             st.info("👆 Select at least one dataset to begin analysis")
-        elif st.button("📊 Analyze Temporal Evolution", type="primary", use_container_width=True):
+        elif st.button("📊 Analyze Temporal Evolution", type="primary", width="stretch"):
             with st.spinner("Analyzing datasets..."):
                 datasets_analysis = []
                 
@@ -583,7 +604,7 @@ elif page == "📈 Temporal Analysis":
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
                 st.markdown('</div>', unsafe_allow_html=True)
                 
                 # Statistics with Custom Cards matching Mockup
@@ -847,7 +868,7 @@ elif page == "🔍 Fetch New Data":
     st.markdown("<br>", unsafe_allow_html=True)
     
     # Fetch button - Red style
-    if st.button("🚀 Fetch Data and Calculate D", type="primary", use_container_width=True):
+    if st.button("🚀 Fetch Data and Calculate D", type="primary", width="stretch"):
         if is_custom and not custom_name:
             st.error("❌ Please enter a name for your custom region")
         else:
@@ -1048,19 +1069,22 @@ elif page == "⚙️ Advanced Analysis":
             for idx, row in plot_data.iterrows():
                 # Color by magnitude if available
                 color = '#9467bd' # Purple default
-                if 'mag' in row:
-                    if row['mag'] >= 6: color = '#d62728' # Red
-                    elif row['mag'] >= 5: color = '#ff7f0e' # Orange
+                mag = row.get('mag', 4.0)
+                if mag >= 6: color = '#d62728' # Red
+                elif mag >= 5: color = '#ff7f0e' # Orange
+                
+                # Size based on magnitude: larger quakes = bigger circles
+                radius = max(2, (mag - 3) * 2)
                 
                 folium.CircleMarker(
                     location=[row['latitude'], row['longitude']],
-                    radius=3,
+                    radius=radius,
                     color=color,
                     fill=True,
                     fillOpacity=0.7
                 ).add_to(m)
             
-            folium_static(m, width=None, height=350) 
+            st_folium(m, width=None, height=350, key="map_advanced", returned_objects=[]) 
             st.caption(caption_text)
             st.markdown('</div>', unsafe_allow_html=True)
             
@@ -1098,7 +1122,7 @@ elif page == "⚙️ Advanced Analysis":
                     # Small font for subplots to fit
                     fig_temp.update_annotations(font_size=10)
                     
-                    st.plotly_chart(fig_temp, use_container_width=True)
+                    st.plotly_chart(fig_temp, width="stretch")
                 else:
                     st.info("Insufficient temporal data for fractal analysis")
             else:
@@ -1116,7 +1140,7 @@ elif page == "⚙️ Advanced Analysis":
             
         num_scales = st.slider("Number of Scales:", 5, 50, 20)
         
-        if st.button("🔬 Perform Box-Counting Analysis", type="primary", use_container_width=True):
+        if st.button("🔬 Perform Box-Counting Analysis", type="primary", width="stretch"):
             with st.spinner("Running advanced box-counting..."):
                 try:
                     result = box_counting(
@@ -1172,7 +1196,7 @@ elif page == "⚙️ Advanced Analysis":
                         height=500
                     )
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width="stretch")
                     
                     # Detailed data table
                     st.markdown("### 📋 Detailed Scale Analysis")
@@ -1197,6 +1221,85 @@ elif page == "⚙️ Advanced Analysis":
                     
                 except Exception as e:
                     st.error(f"Analysis failed: {str(e)}")
+
+# ========== PAGE 5: MANAGE DATASETS ==========
+elif page == "🗂️ Manage Datasets":
+    st.markdown('<h1 class="main-header">🗂️ Dataset Management</h1>', unsafe_allow_html=True)
+    st.markdown("View and manage your earthquake datasets. Delete datasets you no longer need.")
+    
+    if len(available_datasets) == 0:
+        st.info("📭 No datasets found. Go to 'Fetch New Data' to download earthquake data.")
+    else:
+        st.markdown(f"### 📊 Total Datasets: {len(available_datasets)}")
+        st.markdown("---")
+        
+        # Create a nice table view
+        for idx, ds in enumerate(available_datasets):
+            with st.container():
+                st.markdown('<div class="content-box">', unsafe_allow_html=True)
+                
+                col1, col2, col3 = st.columns([3, 2, 1])
+                
+                with col1:
+                    st.markdown(f"### {ds['name']}")
+                    st.markdown(f"**Region:** {ds.get('region', 'Unknown')}")
+                    st.markdown(f"**Category:** {ds.get('category', 'Unknown')}")
+                
+                with col2:
+                    st.markdown(f"**Events:** {ds.get('event_count', 'N/A'):,}")
+                    time_range = ds.get('time_range', {})
+                    if time_range:
+                        start = time_range.get('start', 'Unknown')[:10]
+                        end = time_range.get('end', 'Unknown')[:10]
+                        st.markdown(f"**Period:** {start} to {end}")
+                    
+                    fractal = ds.get('fractal_analysis', {})
+                    if fractal and fractal.get('D'):
+                        st.markdown(f"**Fractal D:** {fractal['D']:.3f}")
+                
+                with col3:
+                    # Delete button with confirmation
+                    delete_key = f"delete_{ds['name']}_{idx}"
+                    confirm_key = f"confirm_{ds['name']}_{idx}"
+                    
+                    if delete_key not in st.session_state:
+                        st.session_state[delete_key] = False
+                    
+                    if not st.session_state[delete_key]:
+                        if st.button("🗑️ Delete", key=f"btn_{idx}", type="secondary"):
+                            st.session_state[delete_key] = True
+                            st.rerun()
+                    else:
+                        st.warning("⚠️ Confirm deletion?")
+                        col_yes, col_no = st.columns(2)
+                        with col_yes:
+                            if st.button("✓ Yes", key=f"yes_{idx}", type="primary"):
+                                # Delete the dataset
+                                try:
+                                    # Remove from registry
+                                    delete_dataset(ds['name'])
+                                    
+                                    # Delete the CSV file if it exists
+                                    filepath = ds.get('filepath', '')
+                                    if filepath and os.path.exists(filepath):
+                                        os.remove(filepath)
+                                        st.success(f"✅ Deleted: {ds['name']} and its data file")
+                                    else:
+                                        st.success(f"✅ Deleted from registry: {ds['name']}")
+                                    
+                                    # Reset state and refresh
+                                    st.session_state[delete_key] = False
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"❌ Error deleting dataset: {e}")
+                        
+                        with col_no:
+                            if st.button("✗ No", key=f"no_{idx}"):
+                                st.session_state[delete_key] = False
+                                st.rerun()
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
 
 
 # Footer
