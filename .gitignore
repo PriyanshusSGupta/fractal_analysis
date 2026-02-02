@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+
+# Local data and state
+data_registry.json
+fetched_earthquakes_*.csv
+Japan_Complete_*.csv
+Nepal_*.csv
+
+# Backups and internal docs
+app_backup.py
+app.py
+DASHBOARD_MOCKUP_PROMPTS.md
+ENHANCEMENT_PLAN.md
+V2_FEATURES_GUIDE.md
+V2_IMPLEMENTATION_SUMMARY.md
+
+# Generated outputs
+fractal_comparison_yearly.png
+
+# OS
+.DS_Store
