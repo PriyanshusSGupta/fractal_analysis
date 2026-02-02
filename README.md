@@ -1,249 +1,236 @@
-# Seismic Fractal Analysis System
+# 🌍 Seismic Fractal Analysis Dashboard V2.0
 
-A comprehensive Python-based system for analyzing earthquake distributions using fractal dimension calculations via the box-counting method. This project compares seismicity patterns between the Himalayan collision zone and Andaman-Sumatra subduction zone.
+A modern, interactive web application for analyzing earthquake distributions using fractal dimension calculations. Compare seismicity patterns across different tectonic regions with real-time data fetching from USGS.
 
-## 🌟 Features
+![Version](https://img.shields.io/badge/version-2.0-blue)
+![Python](https://img.shields.io/badge/python-3.14-blue)
+![Streamlit](https://img.shields.io/badge/streamlit-1.53.1-red)
 
-- **Robust Fractal Dimension Calculation**: Implementation of the box-counting method with error analysis
-- **Regional Comparison**: Automated yearly analysis and visualization of fractal dimension variations
-- **Scientific Interpretation**: Detailed tectonic explanation of observed patterns
-- **Interactive Dashboard**: Multi-page Streamlit web application for data exploration
-- **Data Integration**: Built-in USGS earthquake data fetching capability
+## ✨ Features
 
-## 📊 Key Results
+### 🎯 Core Capabilities
+- **Robust Fractal Dimension Calculation**: Advanced box-counting method with statistical error analysis
+- **Real-time Data Fetching**: Direct integration with USGS Earthquake Catalog API
+- **Interactive Visualization**: Dynamic maps with magnitude-based sizing and color coding
+- **Dataset Management**: Built-in registry system for organizing and managing earthquake datasets
+- **Multi-page Dashboard**: Clean, intuitive interface with 5 specialized pages
 
-| Region | Fractal Dimension (D) | Interpretation |
-|--------|----------------------|----------------|
-| **Himalayas** | 1.23 ± 0.05 | Linear collision zone, planar fault geometry |
-| **Andaman-Sumatra** | 1.53 ± 0.04 | Complex 3D subduction zone, multiple fault systems |
+### 🗺️ Enhanced Visualizations
+- **Magnitude-based Bubble Maps**: Earthquake markers scale with magnitude (M4.0 → 2px, M7.0 → 8px)
+- **Color-coded Seismicity**: Red (M≥6.0), Orange (M≥5.0), Purple (M<5.0)
+- **Interactive Folium Maps**: Zoom, pan, and explore earthquake distributions
+- **Temporal Evolution Charts**: Track fractal dimension changes over time
 
-The **29% higher** fractal dimension in Andaman-Sumatra reflects the greater spatial complexity of oceanic subduction compared to continental collision.
+### 🎨 Modern UI
+- **Theme-aware Design**: Fully responsive in both Light and Dark modes
+- **Professional Styling**: Custom CSS with metric cards, gradient effects, and smooth animations
+- **Mobile-friendly**: Optimized layouts for all screen sizes
 
 ## 🚀 Quick Start
 
 ### Installation
 
 ```bash
-# Navigate to project directory
+# Clone the repository
+git clone https://github.com/PriyanshusSGupta/fractal_analysis.git
 cd fractal_analysis
 
-# Install dependencies (using uv)
-uv pip install pandas numpy scipy matplotlib plotly streamlit folium streamlit-folium
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### Basic Usage
-
-#### 1. Calculate Fractal Dimension
-
-```python
-from fractal_engine import analyze_csv
-
-# Analyze a dataset
-result = analyze_csv('query.csv')
-print(f"Fractal Dimension: {result['D']:.3f} ± {result['std_error']:.3f}")
-print(f"R² = {result['r_squared']:.3f}")
-```
-
-#### 2. Generate Regional Comparison
+### Launch Dashboard
 
 ```bash
-python compare_regions.py
+streamlit run app_v2.py
 ```
 
-Outputs:
-- `himalayan_yearly_D.csv` - Yearly D values for Himalayas
-- `andaman_yearly_D.csv` - Yearly D values for Andaman-Sumatra
-- `fractal_comparison_yearly.png` - Visualization
+Access at: **http://localhost:8501**
 
-#### 3. Launch Interactive Dashboard
+## 📱 Dashboard Pages
 
-```bash
-streamlit run app.py
-```
+### 1️⃣ Overview & Comparison
+- Compare fractal dimensions between two datasets
+- Side-by-side geographic distribution maps
+- Box-counting log-log regression plots
+- Statistical metrics with professional card layouts
 
-Access at: http://localhost:8501
+### 2️⃣ Temporal Analysis
+- Multi-dataset yearly evolution tracking
+- Interactive time period selection
+- Fractal dimension trends over time
+- Event count statistics and correlations
+
+### 3️⃣ Fetch New Data
+- **Region Presets**:
+  - 🏔️ Himalayas (Nepal/India Border)
+  - 🌊 Andaman-Sumatra Subduction Zone
+  - 🏝️ Japan (Complete Archipelago)
+  - 🗾 Tohoku Region
+  - 🌴 Haiti (2010 Earthquake Region)
+  - ✏️ Custom Region (Define your own bounds)
+- Adjustable date ranges and magnitude thresholds
+- Automatic fractal dimension calculation
+- Smart filename generation
+
+### 4️⃣ Advanced Analysis
+- Upload custom CSV datasets
+- Adjustable box-counting parameters (5-50 scales)
+- Geographic distribution visualization
+- Detailed scale-by-scale analysis tables
+- Temporal fractal evolution within datasets
+
+### 5️⃣ Manage Datasets
+- View all registered datasets in a clean table
+- Show metadata: region, events, time period, fractal D
+- **Delete datasets** with two-step confirmation
+- Automatic cleanup of CSV files and registry entries
+
+## 🔬 Scientific Background
+
+### Fractal Dimension Calculation
+
+The fractal dimension **D** quantifies the spatial complexity of earthquake distributions:
+
+**D ≈ 1.2**: Linear, clustered patterns (e.g., collision zones)  
+**D ≈ 1.5-1.6**: Complex, 3D distributed patterns (e.g., subduction zones)  
+**D ≈ 2.0**: Uniform planar distribution
+
+### Box-Counting Method
+
+1. Overlay a grid of boxes (size **r**) on earthquake coordinates
+2. Count non-empty boxes **N(r)**
+3. Repeat for multiple box sizes
+4. Fit linear regression: **log(N) = -D × log(r) + c**
+5. Extract **D** as the negative slope
+
+### Example Results
+
+| Region | Fractal D | Interpretation |
+|--------|-----------|----------------|
+| **Himalayas** | 1.23 ± 0.05 | Linear thrust fault, continental collision |
+| **Andaman-Sumatra** | 1.53 ± 0.04 | Complex subduction, 3D slab geometry |
+| **Japan** | 1.48 ± 0.06 | Multiple fault systems, volcanic arc |
 
 ## 📁 Project Structure
 
 ```
-btp/
-├── fractal_engine.py              # Core box-counting algorithm
-├── compare_regions.py             # Regional comparison script
-├── scientific_discussion.md       # Tectonic interpretation
-├── app.py                         # Streamlit dashboard
-├── get_data.py                    # USGS data fetcher
-├── query.csv                      # Himalayan earthquake data
-├── andaman_earthquakes.csv        # Andaman earthquake data
-├── himalayan_yearly_D.csv         # Generated yearly results
-├── andaman_yearly_D.csv           # Generated yearly results
-├── fractal_comparison_yearly.png  # Generated visualization
-└── README.md                      # This file
+fractal_analysis/
+├── app_v2.py                  # Main Streamlit dashboard
+├── fractal_engine.py          # Box-counting algorithm
+├── get_data.py                # USGS API integration
+├── data_registry.py           # Dataset management system
+├── requirements.txt           # Python dependencies
+├── .streamlit/
+│   └── config.toml           # Streamlit configuration
+├── scientific_discussion.md   # Tectonic interpretation
+├── REGION_PRESETS.md         # Geographic region reference
+└── README.md                  # This file
 ```
 
-## 📱 Dashboard Features
+## 🛠️ Technical Stack
 
-### Page 1: Overview & Comparison
-- Global fractal dimension metrics
-- Interactive earthquake maps
-- Box-counting log-log plots
-- Scientific interpretation
+**Core Libraries:**
+- `streamlit` - Web application framework
+- `pandas` - Data manipulation
+- `numpy` - Numerical computing
+- `scipy` - Statistical analysis
+- `plotly` - Interactive visualizations
+- `folium` - Geographic maps
+- `streamlit-folium` - Folium-Streamlit integration
 
-### Page 2: Temporal Analysis
-- Yearly D evolution (2010-2026)
-- Interactive time range filtering
-- Statistical summaries
-- Event count trends
-- CSV data export
+**APIs:**
+- USGS FDSNWS Earthquake Catalog
 
-### Page 3: Fetch New Data
-- USGS API integration
-- Region presets (Himalayas, Andaman, Custom)
-- Custom date ranges and geographic bounds
-- Automatic D calculation
-- Data download
-
-### Page 4: Advanced Analysis
-- Custom dataset upload
-- Adjustable box-counting parameters
-- Detailed scale-by-scale analysis
-- Export capabilities
-
-## 🔬 Scientific Background
-
-### Box-Counting Method
-
-The fractal dimension D is calculated by:
-
-1. Overlaying a grid of boxes with size r on earthquake coordinates
-2. Counting non-empty boxes N(r)
-3. Repeating for multiple box sizes
-4. Fitting: log(N) = -D × log(r) + c
-5. D is the negative slope
-
-### Tectonic Interpretation
-
-**Himalayas (D ≈ 1.23)**:
-- Continental collision zone
-- Single master fault: Main Himalayan Thrust (MHT)
-- Limited depth range (10-20 km)
-- Linear, clustered seismicity → Lower D
-
-**Andaman-Sumatra (D ≈ 1.53)**:
-- Oceanic subduction zone
-- Multiple fault systems (megathrust, back-arc, strike-slip)
-- Large depth range (0-200 km)
-- 3D curved slab geometry → Higher D
-
-For detailed scientific discussion, see [`scientific_discussion.md`](scientific_discussion.md).
-
-## 📊 Dependencies
-
-```
-pandas >= 2.3.3
-numpy >= 2.4.2
-scipy >= 1.17.0
-matplotlib >= 3.10.8
-plotly >= 6.5.2
-streamlit >= 1.53.1
-folium >= 0.20.0
-streamlit-folium >= 0.26.1
-requests
-```
-
-## 🧪 Testing
-
-All components have been tested and validated:
-
-```bash
-# Test fractal engine
-python fractal_engine.py
-
-# Test regional comparison
-python compare_regions.py
-
-# Test dashboard
-streamlit run app.py
-```
-
-Expected outputs documented in [`walkthrough.md`](.gemini/antigravity/brain/732dc8d5-a873-4a92-bc23-3b8372edbf85/walkthrough.md).
-
-## 📚 API Reference
+## 📊 API Reference
 
 ### `fractal_engine.box_counting()`
 
-Calculate fractal dimension using box-counting method.
-
-**Parameters**:
-- `latitudes` (array): Earthquake latitudes
-- `longitudes` (array): Earthquake longitudes
-- `min_box_size` (float): Minimum box size in degrees (default: 0.1)
-- `max_box_size` (float): Maximum box size (default: auto)
-- `num_scales` (int): Number of box sizes to test (default: 20)
-- `return_details` (bool): Return detailed analysis (default: False)
-
-**Returns**:
-- Dictionary with keys: `D`, `r_squared`, `std_error`, `n_points`, `spatial_extent`
-
-**Example**:
 ```python
-result = box_counting(lats, lons, min_box_size=0.1, num_scales=20)
+from fractal_engine import box_counting
+
+result = box_counting(
+    latitudes=earthquake_lats,
+    longitudes=earthquake_lons,
+    min_box_size=0.1,      # degrees
+    num_scales=20,
+    return_details=True
+)
+
 print(f"D = {result['D']:.3f} ± {result['std_error']:.3f}")
+print(f"R² = {result['r_squared']:.3f}")
 ```
 
 ### `get_data.download_earthquakes()`
 
-Fetch earthquake data from USGS FDSNWS API.
+```python
+from get_data import download_earthquakes
 
-**Parameters**:
-- `start_date` (str): Start date (YYYY-MM-DD)
-- `end_date` (str): End date (YYYY-MM-DD)
-- `min_latitude` (float): Minimum latitude
-- `max_latitude` (float): Maximum latitude
-- `min_longitude` (float): Minimum longitude
-- `max_longitude` (float): Maximum longitude
-- `min_magnitude` (float): Minimum magnitude (default: 4.0)
-- `output_file` (str): Output CSV filename
+download_earthquakes(
+    start_date="2020-01-01",
+    end_date="2026-02-02",
+    min_latitude=26.0,
+    max_latitude=31.0,
+    min_longitude=80.0,
+    max_longitude=88.0,
+    min_magnitude=4.0,
+    output_file="nepal_earthquakes.csv"
+)
+```
 
 ## 🎓 Academic Context
 
 **Project Type**: B.Tech Final Year Project  
-**Domain**: Seismotectonics, Geophysics, Computational Analysis  
-**Period**: 2010-2026 earthquake data  
+**Domain**: Seismotectonics, Computational Geophysics  
+**Data Period**: 2010-2026  
 **Data Source**: USGS Earthquake Catalog
+
+## 🚀 Deployment
+
+### Streamlit Community Cloud
+
+1. Push code to GitHub
+2. Go to [share.streamlit.io](https://share.streamlit.io)
+3. Connect your repository: `PriyanshusSGupta/fractal_analysis`
+4. Set main file: `app_v2.py`
+5. Deploy!
+
+### Docker (Optional)
+
+```dockerfile
+FROM python:3.14-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+EXPOSE 8501
+CMD ["streamlit", "run", "app_v2.py"]
+```
 
 ## 📝 Citation
 
-If you use this code or methodology in your research, please cite:
+If you use this code in your research:
 
 ```
-Seismic Fractal Analysis System (2026)
-Comparative Study of Himalayan and Andaman-Sumatra Earthquake Patterns
-B.Tech Project - Seismic Analysis
+Seismic Fractal Analysis Dashboard V2.0 (2026)
+Comparative Study of Earthquake Patterns Using Box-Counting Method
+B.Tech Project - Computational Seismology
+https://github.com/PriyanshusSGupta/fractal_analysis
 ```
-
-## 🤝 Contributing
-
-This is an academic project. For questions or suggestions, please open an issue.
-
-## 📄 License
-
-This project is created for academic purposes.
 
 ## 🙏 Acknowledgments
 
-- **Data Source**: USGS Earthquake Catalog (earthquake.usgs.gov)
-- **Scientific References**: See `scientific_discussion.md`
-- **Theoretical Foundation**: Turcotte (1997), Hirata (1989), Kagan (1991)
+- **Data**: USGS Earthquake Catalog
+- **Scientific Foundation**: Turcotte (1997), Hirata (1989), Kagan (1991)
+- **Framework**: Streamlit Community
 
-## 📞 Contact
+## 📄 License
 
-For questions about this project, please refer to the documentation in:
-- [`scientific_discussion.md`](scientific_discussion.md) - Scientific methodology
-- [`walkthrough.md`](.gemini/antigravity/brain/732dc8d5-a873-4a92-bc23-3b8372edbf85/walkthrough.md) - Implementation details
-- [`task.md`](.gemini/antigravity/brain/732dc8d5-a873-4a92-bc23-3b8372edbf85/task.md) - Project checklist
+Academic/Educational Use
 
 ---
 
-**Status**: ✅ Complete and Verified  
+**Status**: ✅ Production Ready  
+**Version**: 2.0  
 **Last Updated**: February 2, 2026  
-**Dashboard**: Running on http://localhost:8501
+**Live Demo**: Coming soon to Streamlit Community Cloud
